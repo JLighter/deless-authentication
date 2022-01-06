@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-service
+  name: {{ .Release.Name }}-authentication
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: app
+    app: authentication
   ports:
   - port: 80
     targetPort: 3000

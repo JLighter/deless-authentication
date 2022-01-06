@@ -1,21 +1,26 @@
 package handler
 
 import (
+	"glog/services/database"
+	"glog/services/token"
+
 	"github.com/gofiber/fiber/v2"
-  "glog/services/token"
 )
 
 func Login(c *fiber.Ctx) error {
-	user := c.FormValue("user")
-	pass := c.FormValue("pass")
+	email := c.FormValue("email")
+	password := c.FormValue("password")
 
-	// Throws Unauthorized error
-	if user != "john" || pass != "doe" {
-		return c.SendStatus(fiber.StatusUnauthorized)
-	}
+  db := database.NewDatabase()
+  
+  if ok, err := db.ComparePassword(email, password); err != nil {
+    return c.SendStatus(fiber.StatusServiceUnavailable)
+  } else if !ok {
+    return c.SendStatus(fiber.StatusUnauthorized)
+  }
 
 	// Generate encoded token and send it as response.
-  token := token.GenerateToken("John Doe", false)
+  token := token.GenerateToken(email, false)
 
 	return c.JSON(fiber.Map{"token": token})
 }
