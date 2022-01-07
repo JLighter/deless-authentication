@@ -6,6 +6,6 @@ data:
   .env: |
     SECRET=verysecret
     TOKEN_EXPIRE=3600
-    REDIS_ADDR=blog-redis-master
+    REDIS_ADDR={{ Release.Name }}-redis-master.{{ Release.Name }}.svc.cluster.local
     REDIS_PASSWORD=
     REDIS_DATABASE=0
