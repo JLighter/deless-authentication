@@ -7,7 +7,7 @@ import (
 type User struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required"`
-  Admin    bool
+  Admin    bool `json:"-"`
 }
 
 type NewUser struct {
@@ -105,7 +105,7 @@ func (d *Database) GetUser(email string) (*User, error) {
 
 	return &User{
 		Username: result[0].(string),
-		Admin:    result[1].(bool),
+		Admin:    result[1].(string) == "true",
 		Email:    email,
 	}, nil
 }
