@@ -2,9 +2,10 @@ CONTAINER_NAME=glog
 VERSION_FILE=VERSION
 CONTAINER_VERSION=$(shell cat VERSION)
 
-full-deploy: release-minor deploy dockerize
+test-build: release-build dockerize deploy
 
-test-deploy: release-patch dockerize deploy
+release-build:
+	./ci/semver.sh $(VERSION_FILE) release-build
 
 release-patch:
 	./ci/semver.sh $(VERSION_FILE) release-patch
