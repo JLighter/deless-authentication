@@ -103,7 +103,7 @@ func (d *Database) GetUser(email string) (*User, error) {
 
 	result, err := client.HMGet(d.ctx, userKey(email), "username", "admin").Result()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting user: %s", err)
+		return nil, nil 
 	}
 
 	return &User{
