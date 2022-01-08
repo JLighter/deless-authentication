@@ -5,3 +5,8 @@ pullPolicy: IfNotPresent
 image:
   version: latest
   repository: app
+
+redis:
+  architecture: standalone
+  auth:
+    enabled: false
