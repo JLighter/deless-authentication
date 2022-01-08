@@ -18,17 +18,17 @@ type NewUser struct {
 }
 
 func userKey(email string) string {
-  return fmt.Sprintf("user:%s", email)
+  return fmt.Sprintf("user:%v", email)
 }
 
 func userPasswordKey(email string) string {
-  return fmt.Sprintf("%s:password", userKey(email))
+  return fmt.Sprintf("%v:password", userKey(email))
 }
 
-func (d *Database) RegisterUser(user NewUser) (string, error) {
+func (d *Database) RegisterUser(user NewUser) error {
   client, err := d.connect()
   if err != nil {
-    return "", fmt.Errorf("Error connecting to database: %s", err)
+    return fmt.Errorf("Error connecting to database: %v", err)
   }
 	defer client.Close()
 
@@ -39,7 +39,7 @@ func (d *Database) RegisterUser(user NewUser) (string, error) {
 
 	_, err = pipeline.Exec(d.ctx)
 	if err != nil {
-		return "", fmt.Errorf("error saving user: %s", err)
+		return fmt.Errorf("error saving user: %v", err)
 	}
 
   return nil
@@ -49,7 +49,7 @@ func (d *Database) RegisterUser(user NewUser) (string, error) {
 func (d *Database) ComparePassword(email string, password string) (bool, error) {
   client, err := d.connect()
   if err != nil {
-    return false, fmt.Errorf("Error connecting to database: %s", err)
+    return false, fmt.Errorf("Error connecting to database: %v", err)
   }
   defer client.Close()
 
@@ -64,13 +64,13 @@ func (d *Database) ComparePassword(email string, password string) (bool, error) 
 func (d *Database) ChangePassword(email string, password string) error {
   client, err := d.connect()
   if err != nil {
-    return fmt.Errorf("Error connecting to database: %s", err)
+    return fmt.Errorf("Error connecting to database: %v", err)
   }
 	defer client.Close()
 
 	_, err = client.Set(d.ctx, userPasswordKey(email), password, 0).Result()
 	if err != nil {
-		return fmt.Errorf("Error changing password: %s", err)
+    return fmt.Errorf("Error updating database: %v", err)
 	}
 
 	return nil
@@ -79,13 +79,13 @@ func (d *Database) ChangePassword(email string, password string) error {
 func (d *Database) UpdateUser(user User) error {
 	client, err := d.connect()
   if err != nil {
-    return fmt.Errorf("Error connecting to database: %s", err)
+    return fmt.Errorf("Error connecting to database: %v", err)
   }
 	defer client.Close()
 
 	_, err = client.HMSet(d.ctx, userKey(user.Email), "username", user.Username).Result()
 	if err != nil {
-		return fmt.Errorf("Error updating user: %s", err)
+		return fmt.Errorf("Error updating database: %v", err)
 	}
 
 	return nil
@@ -94,7 +94,7 @@ func (d *Database) UpdateUser(user User) error {
 func (d *Database) GetUser(email string) (*User, error) {
 	client, err := d.connect()
   if err != nil {
-    return nil, fmt.Errorf("Error connecting to database: %s", err)
+    return nil, fmt.Errorf("Error connecting to database: %v", err)
   }
 	defer client.Close()
 
