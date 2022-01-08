@@ -3,6 +3,7 @@ package handler
 import (
 	"glog/services/database"
 	"glog/services/token"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,6 +15,7 @@ func Login(c *fiber.Ctx) error {
   db := database.NewDatabase()
   
   if ok, err := db.ComparePassword(email, password); err != nil {
+    log.Printf("Cannot compare password: %v", err)
     return c.SendStatus(fiber.StatusServiceUnavailable)
   } else if !ok {
     return c.SendStatus(fiber.StatusUnauthorized)

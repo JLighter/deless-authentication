@@ -1,12 +1,13 @@
 package database
 
 import (
+	"fmt"
 	"glog/config"
-	"log"
 	"strconv"
 
+	"context"
+
 	"github.com/go-redis/redis/v8"
-  "context"
 )
 
 type Database struct {
@@ -19,30 +20,30 @@ func NewDatabase() *Database {
   }
 }
 
-func (d *Database) connect() *redis.Client {
+func (d *Database) connect() (*redis.Client, error) {
 	addr, err := config.Config("REDIS_ADDR")
 	if err != nil {
-		log.Fatalf("cannot get Redis address: %s", err)
+		return nil, fmt.Errorf("cannot get Redis address: %s", err)
 	}
 
 	password, err := config.Config("REDIS_PASSWORD")
 	if err != nil {
-		log.Fatalf("cannot get Redis password: %s", err)
+		return nil, fmt.Errorf("cannot get Redis password: %s", err)
 	}
 
 	database, err := config.Config("REDIS_DATABASE")
 	if err != nil {
-		log.Fatalf("cannot get Redis database name: %s", err)
+		return nil, fmt.Errorf("cannot get Redis database name: %s", err)
 	}
 
   databaseNumber, err := strconv.Atoi(database)
 	if err != nil {
-		log.Fatalf("cannot convert Database var to int: %s", err)
+		return nil, fmt.Errorf("cannot convert Database var to int: %s", err)
 	}
 
 	return redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       databaseNumber,
-	})
+	}), nil
 }
