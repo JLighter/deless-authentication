@@ -57,11 +57,11 @@ func (d *Database) ComparePassword(email string, password string) (bool, error) 
   defer client.Close()
 
   result, err := client.Get(d.ctx, userPasswordKey(email)).Result()
-  if err != nil {
-    return false, fmt.Errorf("Error getting user: %s", err)
+  if err != nil || result != password {
+    return false, nil
   }
 
-  return result == password, nil
+  return true, nil
 }
 
 func (d *Database) ChangePassword(email string, password string) error {
