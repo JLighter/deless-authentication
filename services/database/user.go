@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -33,8 +32,6 @@ func (d *Database) RegisterUser(user NewUser) (string, error) {
   }
 	defer client.Close()
 
-	uuid := uuid.New().String()
-
 	pipeline := client.Pipeline()
 
 	pipeline.HMSet(d.ctx, userKey(user.Email), "username", user.Username, "admin", user.Admin)
@@ -45,7 +42,7 @@ func (d *Database) RegisterUser(user NewUser) (string, error) {
 		return "", fmt.Errorf("error saving user: %s", err)
 	}
 
-	return uuid, nil
+  return nil
 }
 
 // Compare password with the hash stored in the Database
