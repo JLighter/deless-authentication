@@ -2,4 +2,6 @@ production: false
 
 repository: app
 pullPolicy: IfNotPresent
-version: latest
+image:
+  version: latest
+  repository: app
