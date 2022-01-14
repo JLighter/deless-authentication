@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-authentication
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: authentication
   ports:
-  - port: 80
+  - port: 8000
     targetPort: 3000
