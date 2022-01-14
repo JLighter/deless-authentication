@@ -7,5 +7,3 @@ data:
     SECRET=verysecret
     TOKEN_EXPIRE=3600
     REDIS_ADDR={{ .Release.Name }}-redis-master.{{ .Release.Name }}.svc.cluster.local:6379
-    REDIS_PASSWORD=
-    REDIS_DATABASE=0
