@@ -20,7 +20,7 @@ func getUserId(c *fiber.Ctx) string {
 func GetUser(c *fiber.Ctx) error {
   userId := getUserId(c)
 
-  db := database.NewMongoDB()
+  db := database.GetMongoDB()
   user, err := db.GetUserById(userId)
 
   if err != nil {
@@ -36,7 +36,7 @@ func GetUser(c *fiber.Ctx) error {
 
 func RegisterUser(c *fiber.Ctx) error {
 
-  db := database.NewMongoDB()
+  db := database.GetMongoDB()
 
   id := uuid.New().String()
   err := db.RegisterUser(database.User{
@@ -61,7 +61,7 @@ func RegisterUser(c *fiber.Ctx) error {
 
 func UpdateSelf(c *fiber.Ctx) error {
 
-  db := database.NewMongoDB()
+  db := database.GetMongoDB()
   userId := getUserId(c)
 
   user, err := db.GetUserById(userId)
@@ -93,7 +93,7 @@ func ChangePassword(c *fiber.Ctx) error {
   userId := getUserId(c)
   password := c.FormValue("password")
 
-  db := database.NewMongoDB()
+  db := database.GetMongoDB()
   err := db.ChangePassword(database.Password{
     UserId: userId,
     Value: password,

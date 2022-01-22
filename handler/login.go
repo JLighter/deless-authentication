@@ -12,7 +12,7 @@ func Login(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	db := database.NewMongoDB()
+	db := database.GetMongoDB()
   user, err := db.GetUserByEmail(email)
   if err != nil {
     log.Printf("Error getting user: %v", err)
