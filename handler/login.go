@@ -12,17 +12,24 @@ func Login(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-  db := database.NewDatabase()
-  
-  if ok, err := db.ComparePassword(email, password); err != nil {
-    log.Printf("Cannot compare password: %v", err)
-    return c.SendStatus(fiber.StatusServiceUnavailable)
-  } else if !ok {
+	db := database.NewMongoDB()
+  user, err := db.GetUserByEmail(email)
+  if err != nil {
+    log.Printf("Error getting user: %v", err)
+    return c.SendStatus(fiber.StatusInternalServerError)
+  }
+  if user == nil {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-	// Generate encoded token and send it as response.
-  token := token.GenerateToken(email, false)
+	if ok, err := db.ComparePassword(database.Password{UserId: user.Id, Value: password}); err != nil {
+		log.Printf("Cannot compare password: %v", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	} else if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	token := token.GenerateToken(user.Id, false)
 
 	return c.JSON(fiber.Map{"token": token})
 }

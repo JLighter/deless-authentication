@@ -78,6 +78,24 @@ func (d *MongoDB) ChangePassword(newPassword Password) error {
 	return nil
 }
 
+func (d *MongoDB) SetPassword(password Password) error {
+  client, err := d.connect()
+  if err != nil {
+    return fmt.Errorf("Error connecting to database: %v", err)
+  }
+  defer d.disconnect(client)
+
+  database := client.Database(DATABASE_NAME)
+  passwords := database.Collection(PASSWORD_COLLECTION)
+
+  _, err = passwords.InsertOne(d.ctx, password)
+  if err != nil {
+    return fmt.Errorf("Error setting password: %v", err)
+  }
+
+  return nil
+}
+
 func (d *MongoDB) UpdateUser(user User) error {
   client, err := d.connect()
   if err != nil {
@@ -96,7 +114,7 @@ func (d *MongoDB) UpdateUser(user User) error {
 	return nil
 }
 
-func (d *MongoDB) GetUser(id string) (*User, error) {
+func (d *MongoDB) GetUserById(id string) (*User, error) {
   client, err := d.connect()
   if err != nil {
     return nil, fmt.Errorf("Error connecting to database: %v", err)
@@ -113,4 +131,41 @@ func (d *MongoDB) GetUser(id string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
+  client, err := d.connect()
+  if err != nil {
+    return nil, fmt.Errorf("Error connecting to database: %v", err)
+  }
+  defer d.disconnect(client)
+
+  database := client.Database(DATABASE_NAME)
+  users := database.Collection(USERS_COLLECTION)
+
+  var user User;
+  err = users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
+  if err != nil {
+    return nil, nil 
+  }
+
+  return &user, nil
+}
+
+func (d *MongoDB) DeleteUser(id string) error {
+  client, err := d.connect()
+  if err != nil {
+    return fmt.Errorf("Error connecting to database: %v", err)
+  }
+  defer d.disconnect(client)
+
+  database := client.Database(DATABASE_NAME)
+  users := database.Collection(USERS_COLLECTION)
+
+  _, err = users.DeleteOne(d.ctx, bson.M{"Id": id})
+  if err != nil {
+    return fmt.Errorf("Error deleting user: %v", err)
+  }
+
+  return nil
 }

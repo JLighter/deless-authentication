@@ -7,17 +7,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 var ctx = context.Background()
 
-func GetUser(c *fiber.Ctx) error {
+func getUserId(c *fiber.Ctx) string {
   token := c.Locals("user").(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+  return token.Claims.(jwt.MapClaims)["id"].(string)
+}
 
-  db := database.NewDatabase()
-  user, err := db.GetUser(email)
+func GetUser(c *fiber.Ctx) error {
+  userId := getUserId(c)
+
+  db := database.NewMongoDB()
+  user, err := db.GetUserById(userId)
 
   if err != nil {
     log.Printf("Error getting user: %v", err)
@@ -32,12 +36,19 @@ func GetUser(c *fiber.Ctx) error {
 
 func RegisterUser(c *fiber.Ctx) error {
 
-  db := database.NewDatabase()
-  err := db.RegisterUser(database.NewUser{
+  db := database.NewMongoDB()
+
+  id := uuid.New().String()
+  err := db.RegisterUser(database.User{
+    Id: id,
     Email: c.FormValue("email"),
     Username: c.FormValue("username"),
-    Password: c.FormValue("password"),
     Admin: false,
+  })
+
+  db.SetPassword(database.Password{
+    UserId: id,
+    Value: c.FormValue("password"),
   })
 
   if err != nil {
@@ -48,16 +59,28 @@ func RegisterUser(c *fiber.Ctx) error {
   return c.SendStatus(fiber.StatusOK)
 }
 
-func UpdateUser(c *fiber.Ctx) error {
+func UpdateSelf(c *fiber.Ctx) error {
 
-  newUser := database.User{
-    Email: c.FormValue("email"),
-    Username: c.FormValue("username"),
+  db := database.NewMongoDB()
+  userId := getUserId(c)
+
+  user, err := db.GetUserById(userId)
+  if err != nil {
+    log.Printf("Error getting user: %v", err)
+    return c.SendStatus(fiber.StatusInternalServerError)
+  }
+  if user == nil {
+    return c.SendStatus(fiber.StatusNotFound)
   }
 
-  db := database.NewDatabase()
-  err := db.UpdateUser(newUser)
+  newUser := database.User{
+    Id: userId,
+    Email: c.FormValue("email"),
+    Username: c.FormValue("username"),
+    Admin: user.Admin,
+  }
 
+  err = db.UpdateUser(newUser)
   if err != nil {
     log.Printf("Error updating user: %v", err)
     return c.SendStatus(fiber.StatusInternalServerError)
@@ -67,11 +90,14 @@ func UpdateUser(c *fiber.Ctx) error {
 }
 
 func ChangePassword(c *fiber.Ctx) error {
-  email := ""
+  userId := getUserId(c)
   password := c.FormValue("password")
 
-  db := database.NewDatabase()
-  err := db.ChangePassword(email, password)
+  db := database.NewMongoDB()
+  err := db.ChangePassword(database.Password{
+    UserId: userId,
+    Value: password,
+  })
 
   if err != nil {
     log.Printf("Error changing password: %v", err)
