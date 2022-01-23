@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -17,7 +18,7 @@ type User struct {
 }
 
 type Password struct {
-  UserId       string `json:"id" binding:"required"`
+  UserId    string `json:"id" binding:"required"`
   Value     string `json:"value" binding:"required"`
 }
 

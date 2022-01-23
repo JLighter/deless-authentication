@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"glog/services/database"
 	"log"
 
@@ -23,7 +24,10 @@ func getUserId(c *fiber.Ctx) (string, error) {
 }
 
 func GetUser(c *fiber.Ctx) error {
-  userId := getUserId(c)
+  userId, err := getUserId(c)
+  if err != nil {
+    return c.SendStatus(fiber.StatusUnauthorized)
+  }
 
   db := database.GetMongoDB()
   user, err := db.GetUserById(userId)
@@ -112,7 +116,7 @@ func ChangePassword(c *fiber.Ctx) error {
   password := c.FormValue("password")
 
   db := database.GetMongoDB()
-  err := db.ChangePassword(database.Password{
+  err = db.ChangePassword(database.Password{
     UserId: userId,
     Value: password,
   })
