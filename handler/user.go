@@ -47,10 +47,7 @@ func RegisterUser(c *fiber.Ctx) error {
 
   db := database.GetMongoDB()
 
-  if exists, err := db.UserExists(c.FormValue("email")); err != nil {
-    log.Printf("Error checking if user exists: %v", err)
-    return c.SendStatus(fiber.StatusInternalServerError)
-  } else if exists {
+  if exists := db.UserExists(c.FormValue("email")); exists == true {
     return c.SendStatus(fiber.StatusOK)
   }
 
