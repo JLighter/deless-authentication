@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const DATABASE_NAME = "auth"
@@ -17,14 +18,27 @@ type User struct {
   Admin    bool `json:"-"`
 }
 
+func (d *MongoDB) getUserCollection() *mongo.Collection {
+  database := d.client.Database(DATABASE_NAME)
+  users := database.Collection(USERS_COLLECTION)
+
+  return users
+}
+
 type Password struct {
   UserId    string `json:"id" binding:"required"`
   Value     string `json:"value" binding:"required"`
 }
 
-func (d *MongoDB) UserExists(email string) bool {
+func (d *MongoDB) getPasswordCollection() *mongo.Collection {
   database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  passwords := database.Collection(PASSWORD_COLLECTION)
+
+  return passwords
+}
+
+func (d *MongoDB) UserExists(email string) bool {
+  users := d.getUserCollection()
 
   var user User;
   err := users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
@@ -36,8 +50,7 @@ func (d *MongoDB) UserExists(email string) bool {
 }
 
 func (d *MongoDB) RegisterUser(user User) error {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  users := d.getUserCollection()
 
   _, err := users.InsertOne(d.ctx, user)
 
@@ -49,8 +62,7 @@ func (d *MongoDB) RegisterUser(user User) error {
 }
 
 func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
-  database := d.client.Database(DATABASE_NAME)
-  passwords := database.Collection(PASSWORD_COLLECTION)
+  passwords := d.getPasswordCollection()
 
   var password Password;
 
@@ -63,8 +75,7 @@ func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
 }
 
 func (d *MongoDB) ChangePassword(newPassword Password) error {
-  database := d.client.Database(DATABASE_NAME)
-  passwords := database.Collection(PASSWORD_COLLECTION)
+  passwords := d.getPasswordCollection()
 
   _, err := passwords.ReplaceOne(d.ctx, bson.M{"UserId": newPassword.UserId}, newPassword)
 	if err != nil {
@@ -75,8 +86,7 @@ func (d *MongoDB) ChangePassword(newPassword Password) error {
 }
 
 func (d *MongoDB) SetPassword(password Password) error {
-  database := d.client.Database(DATABASE_NAME)
-  passwords := database.Collection(PASSWORD_COLLECTION)
+  passwords := d.getPasswordCollection()
 
   _, err := passwords.InsertOne(d.ctx, password)
   if err != nil {
@@ -87,8 +97,7 @@ func (d *MongoDB) SetPassword(password Password) error {
 }
 
 func (d *MongoDB) UpdateUser(user User) error {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  users := d.getUserCollection()
 
   _, err := users.ReplaceOne(d.ctx, bson.M{"id": user.Id}, user)
 	if err != nil {
@@ -99,8 +108,7 @@ func (d *MongoDB) UpdateUser(user User) error {
 }
 
 func (d *MongoDB) GetUserById(id string) (*User, error) {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  users := d.getUserCollection()
 
   var user User;
   err := users.FindOne(d.ctx, bson.M{"id": id}).Decode(&user)
@@ -112,8 +120,7 @@ func (d *MongoDB) GetUserById(id string) (*User, error) {
 }
 
 func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  users := d.getUserCollection()
 
   var user User;
   err := users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
@@ -125,8 +132,7 @@ func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
 }
 
 func (d *MongoDB) DeleteUser(id string) error {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+  users := d.getUserCollection()
 
   _, err := users.DeleteOne(d.ctx, bson.M{"Id": id})
   if err != nil {
