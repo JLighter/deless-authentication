@@ -77,7 +77,7 @@ func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
 func (d *MongoDB) ChangePassword(newPassword Password) error {
   passwords := d.getPasswordCollection()
 
-  _, err := passwords.ReplaceOne(d.ctx, bson.M{"UserId": newPassword.UserId}, newPassword)
+  _, err := passwords.ReplaceOne(d.ctx, bson.M{"userid": newPassword.UserId}, newPassword)
 	if err != nil {
     return fmt.Errorf("Error updating password: %v", err)
 	}
