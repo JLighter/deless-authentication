@@ -3,6 +3,6 @@ name: Glog chart
 version: 1.0.0
 
 dependencies:
-- name: redis
-  version: 15.7.1 
-  repository: https://charts.bitnami.com/bitnami 
+- name: mongodb
+  version: 10.31.3 
+  repository: https://charts.bitnami.com/bitnami

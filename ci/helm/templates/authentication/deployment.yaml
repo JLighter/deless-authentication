@@ -26,6 +26,12 @@ spec:
           requests:
             memory: "32Mi"
             cpu: "100m"
+        env:
+          - name: MONGO_URI
+            valueFrom: 
+              secretKeyRef: 
+                name: {{ .Release.Name }}-mongo-uri
+                key: uri
         volumeMounts:
         - name: environment
           mountPath: /home/app/.env

@@ -6,7 +6,11 @@ image:
   version: latest
   repository: app
 
-redis:
+mongo:
+  host: glog-mongodb.glog.svc.cluster.local
+  port: 27017
+
+mongodb:
   architecture: standalone
   auth:
     enabled: false

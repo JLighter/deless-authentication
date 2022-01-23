@@ -1,0 +1,6 @@
+{{- define "MongoURI" }}
+  {{- with .Values.mongo }}
+{{- printf "mongodb://%s:%v" .host .port | b64enc }}
+  {{- end }}
+{{- end }}
+
