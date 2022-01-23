@@ -12,9 +12,14 @@ import (
 
 var ctx = context.Background()
 
-func getUserId(c *fiber.Ctx) string {
+func getUserId(c *fiber.Ctx) (string, error) {
   token := c.Locals("user").(*jwt.Token)
-  return token.Claims.(jwt.MapClaims)["id"].(string)
+  claim := token.Claims.(jwt.MapClaims)
+  if claim["id"] == nil {
+    return "", fmt.Errorf("invalid token")
+  } else {
+    return claim["id"].(string), nil
+  }
 }
 
 func GetUser(c *fiber.Ctx) error {
@@ -69,7 +74,10 @@ func RegisterUser(c *fiber.Ctx) error {
 func UpdateSelf(c *fiber.Ctx) error {
 
   db := database.GetMongoDB()
-  userId := getUserId(c)
+  userId, err := getUserId(c)
+  if err != nil {
+    return c.SendStatus(fiber.StatusUnauthorized)
+  }
 
   user, err := db.GetUserById(userId)
   if err != nil {
@@ -97,7 +105,10 @@ func UpdateSelf(c *fiber.Ctx) error {
 }
 
 func ChangePassword(c *fiber.Ctx) error {
-  userId := getUserId(c)
+  userId, err := getUserId(c)
+  if err != nil {
+    return c.SendStatus(fiber.StatusUnauthorized)
+  }
   password := c.FormValue("password")
 
   db := database.GetMongoDB()
