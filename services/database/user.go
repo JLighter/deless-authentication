@@ -21,6 +21,19 @@ type Password struct {
   Value     string `json:"value" binding:"required"`
 }
 
+func (d *MongoDB) UserExists(email string) (bool, error) {
+  database := d.client.Database(DATABASE_NAME)
+  users := database.Collection(USERS_COLLECTION)
+
+  var user User;
+  err := users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
+  if err != nil {
+    return false, fmt.Errorf("error checking if user exists: %v", err)
+  }
+
+  return true, nil
+}
+
 func (d *MongoDB) RegisterUser(user User) error {
   database := d.client.Database(DATABASE_NAME)
   users := database.Collection(USERS_COLLECTION)
