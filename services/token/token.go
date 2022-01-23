@@ -1,8 +1,8 @@
 package token
 
 import (
+	"fmt"
 	"glog/config"
-	"log"
 	"strconv"
 	"time"
 
@@ -12,12 +12,12 @@ import (
 func createClaim(id string) (*jwt.MapClaims, error) {
 	token_expire, err := config.Config("TOKEN_EXPIRE")
 	if err != nil {
-		log.Fatalf("cannot get TOKEN_EXPIRE variable : %s", err)
+		return nil, fmt.Errorf("cannot get TOKEN_EXPIRE variable : %s", err)
 	}
 
 	expire, err := strconv.Atoi(token_expire)
 	if err != nil {
-		log.Fatalf("cannot convert TOKEN_EXPIRE to integer : %s", err)
+		return nil, fmt.Errorf("cannot convert TOKEN_EXPIRE to integer : %s", err)
 	}
 
 	return &jwt.MapClaims{
@@ -26,23 +26,23 @@ func createClaim(id string) (*jwt.MapClaims, error) {
 	}, nil
 }
 
-func GenerateToken(id string, admin bool) string {
+func GenerateToken(id string, admin bool) (string, error) {
 	claim, err := createClaim(id)
 	if err != nil {
-		log.Fatalf("cannot generate claim: %s", err)
+		return "", fmt.Errorf("cannot generate claim: %s", err)
 	}
 
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 
 	secret, err := config.Config("SECRET")
 	if err != nil {
-		log.Fatalf("cannot get secret: %s", err)
+		return "", fmt.Errorf("cannot get secret: %s", err)
 	}
 
 	tokenString, err := newToken.SignedString([]byte(secret))
 	if err != nil {
-		log.Fatalf("cannot sign token: %s", err)
+		return "", fmt.Errorf("cannot sign token: %s", err)
 	}
 
-	return tokenString
+	return tokenString, nil
 }

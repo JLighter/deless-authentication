@@ -3,8 +3,7 @@ package main
 import (
 	"glog/middleware"
 	"glog/router"
-
-	"log"
+	"glog/services/logger"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,5 +14,5 @@ func main() {
 	middleware.SetupMiddlewares(app)
 	router.SetupRoutes(app)
 
-	log.Fatal(app.Listen(":80"))
+	logger.GetLogger().ApplicationCrashed(app.Listen(":80").Error())
 }

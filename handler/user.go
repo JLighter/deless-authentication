@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"glog/services/database"
-	"log"
+	"glog/services/logger"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
@@ -34,7 +34,7 @@ func GetUser(c *fiber.Ctx) error {
   user, err := db.GetUserById(userId)
 
   if err != nil {
-    log.Printf("Error getting user: %v", err)
+    logger.GetLogger().CannotGetUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
   if user == nil {
@@ -59,7 +59,7 @@ func RegisterUser(c *fiber.Ctx) error {
   })
 
   if err != nil {
-    log.Printf("error inserting user: %v", err)
+    logger.GetLogger().CannotCreateUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
@@ -69,10 +69,11 @@ func RegisterUser(c *fiber.Ctx) error {
   })
 
   if err != nil {
-    log.Printf("error inserting password: %v", err)
+    logger.GetLogger().CannotCreatePassword(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
+  logger.GetLogger().DidCreateUser(id.Hex())
   return c.SendStatus(fiber.StatusOK)
 }
 
@@ -86,7 +87,7 @@ func UpdateSelf(c *fiber.Ctx) error {
 
   user, err := db.GetUserById(userId)
   if err != nil {
-    log.Printf("Error getting user: %v", err)
+    logger.GetLogger().CannotGetUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
   if user == nil {
@@ -102,10 +103,11 @@ func UpdateSelf(c *fiber.Ctx) error {
 
   err = db.UpdateUser(newUser)
   if err != nil {
-    log.Printf("Error updating user: %v", err)
+    logger.GetLogger().CannotUpdateUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
+  logger.GetLogger().DidUpdateUser(userId.Hex())
   return c.Status(fiber.StatusOK).JSON(newUser)
 }
 
@@ -123,10 +125,11 @@ func ChangePassword(c *fiber.Ctx) error {
   })
 
   if err != nil {
-    log.Printf("Error changing password: %v", err)
+    logger.GetLogger().CannotChangePassword(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
+  logger.GetLogger().DidChangePassword(userId.Hex())
   return c.SendStatus(fiber.StatusOK)
 }
 
