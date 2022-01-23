@@ -53,7 +53,7 @@ func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
 
   var password Password;
 
-  err := passwords.FindOne(d.ctx, bson.M{"UserId": toCompare.UserId}).Decode(&password)
+  err := passwords.FindOne(d.ctx, bson.M{"userid": toCompare.UserId}).Decode(&password)
   if err != nil || toCompare.Value != password.Value {
     return false, nil
   }
