@@ -29,7 +29,7 @@ func Login(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	token := token.GenerateToken(user.Id, false)
+	token := token.GenerateToken(user.Id.Hex(), false)
 
 	return c.JSON(fiber.Map{"token": token})
 }

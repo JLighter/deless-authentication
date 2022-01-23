@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -12,10 +13,10 @@ const USERS_COLLECTION = "users"
 const PASSWORD_COLLECTION = "passwords"
 
 type User struct {
-  Id       string `json:"id" binding:"required"`
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-  Admin    bool `json:"-"`
+  Id       primitive.ObjectID `json:"id" binding:"required" bson:"_id,omitempty"`
+  Username string `json:"username" binding:"required" bson:"username"`
+  Email    string `json:"email" binding:"required" bson:"email"`
+  Admin    bool   `json:"-" bson:"admin"`
 }
 
 func (d *MongoDB) getUserCollection() *mongo.Collection {
@@ -26,8 +27,9 @@ func (d *MongoDB) getUserCollection() *mongo.Collection {
 }
 
 type Password struct {
-  UserId    string `json:"id" binding:"required"`
-  Value     string `json:"value" binding:"required"`
+  Id        primitive.ObjectID `json:"id" binding:"required" bson:"_id,omitempty"`
+  UserId    primitive.ObjectID `json:"userid" binding:"required" bson:"userid"`
+  Value     string `json:"value" binding:"required" bson:"value"`
 }
 
 func (d *MongoDB) getPasswordCollection() *mongo.Collection {
@@ -49,16 +51,16 @@ func (d *MongoDB) UserExists(email string) bool {
   return true
 }
 
-func (d *MongoDB) RegisterUser(user User) error {
+func (d *MongoDB) RegisterUser(user User) (primitive.ObjectID, error) {
   users := d.getUserCollection()
 
-  _, err := users.InsertOne(d.ctx, user)
+  result, err := users.InsertOne(d.ctx, user)
 
 	if err != nil {
-		return fmt.Errorf("error saving user: %v", err)
+		return primitive.NilObjectID, fmt.Errorf("error saving user: %v", err)
 	}
 
-  return nil
+  return result.InsertedID.(primitive.ObjectID), nil
 }
 
 func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
@@ -99,7 +101,7 @@ func (d *MongoDB) InsertPassword(password Password) error {
 func (d *MongoDB) UpdateUser(user User) error {
   users := d.getUserCollection()
 
-  _, err := users.ReplaceOne(d.ctx, bson.M{"id": user.Id}, user)
+  _, err := users.ReplaceOne(d.ctx, bson.M{"_id": user.Id}, user)
 	if err != nil {
 		return fmt.Errorf("Error updating database: %v", err)
 	}
@@ -107,11 +109,11 @@ func (d *MongoDB) UpdateUser(user User) error {
 	return nil
 }
 
-func (d *MongoDB) GetUserById(id string) (*User, error) {
+func (d *MongoDB) GetUserById(id primitive.ObjectID) (*User, error) {
   users := d.getUserCollection()
 
   var user User;
-  err := users.FindOne(d.ctx, bson.M{"id": id}).Decode(&user)
+  err := users.FindOne(d.ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
 		return nil, nil 
 	}
@@ -134,7 +136,7 @@ func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
 func (d *MongoDB) DeleteUser(id string) error {
   users := d.getUserCollection()
 
-  _, err := users.DeleteOne(d.ctx, bson.M{"Id": id})
+  _, err := users.DeleteOne(d.ctx, bson.M{"_id": id})
   if err != nil {
     return fmt.Errorf("Error deleting user: %v", err)
   }

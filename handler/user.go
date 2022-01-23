@@ -8,18 +8,19 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var ctx = context.Background()
 
-func getUserId(c *fiber.Ctx) (string, error) {
+func getUserId(c *fiber.Ctx) (primitive.ObjectID, error) {
   token := c.Locals("user").(*jwt.Token)
   claim := token.Claims.(jwt.MapClaims)
   if claim["id"] == nil {
-    return "", fmt.Errorf("invalid token")
+    return primitive.NilObjectID, fmt.Errorf("no user id in token")
   } else {
-    return claim["id"].(string), nil
+    id, err := primitive.ObjectIDFromHex(claim["id"].(string))
+    return id, err
   }
 }
 
@@ -51,21 +52,24 @@ func RegisterUser(c *fiber.Ctx) error {
     return c.SendStatus(fiber.StatusOK)
   }
 
-  id := uuid.New().String()
-  err := db.RegisterUser(database.User{
-    Id: id,
+  id, err := db.RegisterUser(database.User{
     Email: c.FormValue("email"),
     Username: c.FormValue("username"),
     Admin: false,
   })
 
-  db.InsertPassword(database.Password{
+  if err != nil {
+    log.Printf("error inserting user: %v", err)
+    return c.SendStatus(fiber.StatusInternalServerError)
+  }
+
+  err = db.InsertPassword(database.Password{
     UserId: id,
     Value: c.FormValue("password"),
   })
 
   if err != nil {
-    log.Printf("Error registering user: %v", err)
+    log.Printf("error inserting password: %v", err)
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
