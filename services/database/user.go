@@ -85,7 +85,7 @@ func (d *MongoDB) ChangePassword(newPassword Password) error {
 	return nil
 }
 
-func (d *MongoDB) SetPassword(password Password) error {
+func (d *MongoDB) InsertPassword(password Password) error {
   passwords := d.getPasswordCollection()
 
   _, err := passwords.InsertOne(d.ctx, password)

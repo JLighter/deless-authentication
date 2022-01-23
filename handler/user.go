@@ -59,7 +59,7 @@ func RegisterUser(c *fiber.Ctx) error {
     Admin: false,
   })
 
-  db.SetPassword(database.Password{
+  db.InsertPassword(database.Password{
     UserId: id,
     Value: c.FormValue("password"),
   })
