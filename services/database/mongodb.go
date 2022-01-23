@@ -57,3 +57,13 @@ func connect(ctx context.Context) (*mongo.Client, error) {
 
   return client, nil
 }
+
+func (m *MongoDB) Ping() error {
+  err := m.client.Ping(m.ctx, nil)
+  if err != nil {
+    return fmt.Errorf("Cannot ping mongodb: %v", err)
+  }
+
+  return nil
+}
+

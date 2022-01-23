@@ -1,10 +1,16 @@
 package handler
 
 import (
+	"glog/services/database"
+
 	"github.com/gofiber/fiber/v2"
 )
 
-// Hello hanlde api status
-func Hello(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{"status": "success", "message": "Hello i'm ok!", "data": nil})
+// HealthCheck handle api health check
+func HealthCheck(c *fiber.Ctx) error {
+  err := database.GetMongoDB().Ping()
+  if err != nil {
+    return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "error", "message": "User database is not available", "data": nil})
+  }
+  return c.JSON(fiber.Map{"status": "success", "message": "Health check is ok!"})
 }
