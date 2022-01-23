@@ -5,9 +5,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const DATABASE_NAME = "AUTH"
-const USERS_COLLECTION = "USERS"
-const PASSWORD_COLLECTION = "PASSWORDS"
+const DATABASE_NAME = "auth"
+const USERS_COLLECTION = "users"
+const PASSWORD_COLLECTION = "passwords"
 
 type User struct {
   Id       string `json:"id" binding:"required"`
