@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func createClaim(email string, admin bool) (*jwt.MapClaims, error) {
+func createClaim(id string) (*jwt.MapClaims, error) {
   token_expire, err := config.Config("TOKEN_EXPIRE")
   if err != nil {
     log.Fatalf("cannot get TOKEN_EXPIRE variable : %s", err)
@@ -21,14 +21,13 @@ func createClaim(email string, admin bool) (*jwt.MapClaims, error) {
   }
 
   return &jwt.MapClaims{
-		"email":  email,
-		"admin": admin,
+		"id":  id,
 		"exp":   time.Now().Add(time.Second * time.Duration(expire)).Unix(),
 	}, nil
 }
 
-func GenerateToken(email string, admin bool) string {
-  claim, err := createClaim(email, admin)
+func GenerateToken(id string, admin bool) string {
+  claim, err := createClaim(id)
   if err != nil {
     log.Fatalf("cannot generate claim: %s", err)
   }
