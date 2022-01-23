@@ -7,10 +7,10 @@ image:
   repository: app
 
 mongo:
-  host: glog-mongodb.glog.svc.cluster.local
+  host: glog-mongodb-headless
   port: 27017
 
 mongodb:
-  architecture: standalone
+  architecture: replicaset
   auth:
     enabled: false
