@@ -1,8 +1,0 @@
-apiVersion: v2
-name: Glog chart
-version: 1.0.0
-
-dependencies:
-- name: mongodb
-  version: 10.31.3 
-  repository: https://charts.bitnami.com/bitnami
