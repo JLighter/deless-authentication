@@ -13,4 +13,4 @@ USER app
 WORKDIR /home/app
 COPY --from=builder /bin/app ./
 EXPOSE 80
-ENTRYPOINT ["./app"]
+CMD ./app | grep "^{"
