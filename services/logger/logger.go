@@ -38,24 +38,24 @@ func NewLogger() *StandardLogger {
 
 // Declare variables to store log messages as new Events
 var (
-	appCrashedMessage            = Event{1, "Application crashed"}
+	appCrashedMessage            = Event{1, "APPLICATION_CRASHED"}
 
-	cannotPingMongoDBMessage     = Event{2, "Cannot ping MongoDB"}
-	cannotGetUserMessage         = Event{3, "Cannot get user"}
-	cannotCreateUserMessage      = Event{4, "Cannot create user"}
-	cannotUpdateUserMessage      = Event{5, "Cannot update user"}
-	cannotGenerateTokenMessage   = Event{6, "Cannot generate token"}
-	cannotCreatePasswordMessage  = Event{7, "Cannot create password"}
-	cannotComparePasswordMessage = Event{8, "Cannot compare password"}
-	cannotUpdatePasswordMessage  = Event{9, "Cannot update password"}
+	cannotPingMongoDBMessage     = Event{2, "CANNOT_PING_MONGODB"}
+	cannotGetUserMessage         = Event{3, "CANNOT_GET_USER"}
+	cannotCreateUserMessage      = Event{4, "CANNOT_CREATE_USER"}
+	cannotUpdateUserMessage      = Event{5, "CANNOT_UPDATE_USER"}
+	cannotGenerateTokenMessage   = Event{6, "CANNOT_GENERATE_TOKEN"}
+	cannotCreatePasswordMessage  = Event{7, "CANNOT_CREATE_PASSWORD"}
+	cannotComparePasswordMessage = Event{8, "CANNOT_COMPARE_PASSWORD"}
+	cannotUpdatePasswordMessage  = Event{9, "CANNOT_UPDATE_PASSWORD"}
 
-	didCreateUserMessage         = Event{10, "Created user"}
-	didDeleteUserMessage         = Event{11, "Delete user"}
-	didUpdateUserMessage         = Event{12, "Update user"}
+	didCreateUserMessage         = Event{10, "CREATED_USER"}
+	didDeleteUserMessage         = Event{11, "DELETE_USER"}
+	didUpdateUserMessage         = Event{12, "UPDATE_USER"}
 
-	didChangePasswordMessage     = Event{13, "Change password user"}
+	didChangePasswordMessage     = Event{13, "CHANGE_USER_PASSWORD"}
 
-	didLoginMessage              = Event{14, "User logged in"}
+	didLoginMessage              = Event{14, "USER_LOGGED_IN"}
 )
 
 func (l *StandardLogger) ApplicationCrashed(reason string) {
@@ -95,15 +95,15 @@ func (l *StandardLogger) CannotChangePassword(reason string) {
 }
 
 func (l *StandardLogger) DidCreateUser(id string) {
-	l.WithField("id", id).Infof(didCreateUserMessage.message, id)
+	l.WithField("id", id).Infof(didCreateUserMessage.message)
 }
 
 func (l *StandardLogger) DidDeleteUser(id string) {
-	l.WithField("id", id).Infof(didDeleteUserMessage.message, id)
+	l.WithField("id", id).Infof(didDeleteUserMessage.message)
 }
 
 func (l *StandardLogger) DidUpdateUser(id string) {
-	l.WithField("id", id).Infof(didUpdateUserMessage.message, id)
+	l.WithField("id", id).Infof(didUpdateUserMessage.message)
 }
 
 func (l *StandardLogger) DidChangePassword(id string) {
