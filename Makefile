@@ -1,6 +1,6 @@
-CONTAINER_NAME=glog
+IMAGE_NAME=glog-authentication
 VERSION_FILE=VERSION
-CONTAINER_VERSION=$(shell cat VERSION)
+IMAGE_VERSION=$(shell cat VERSION)
 
 test-build: release-build dockerize
 
@@ -20,4 +20,4 @@ build: main
 	go build main.go
 
 dockerize:
-	docker build . -t ${CONTAINER_NAME}:${CONTAINER_VERSION}
+	docker build . -t ${IMAGE_NAME}:${IMAGE_VERSION}
