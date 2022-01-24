@@ -73,7 +73,7 @@ func RegisterUser(c *fiber.Ctx) error {
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidCreateUser(id.Hex())
+  logger.GetLogger().DidCreateUser(id.String())
   return c.SendStatus(fiber.StatusOK)
 }
 
@@ -107,7 +107,7 @@ func UpdateSelf(c *fiber.Ctx) error {
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidUpdateUser(userId.Hex())
+  logger.GetLogger().DidUpdateUser(userId.String())
   return c.Status(fiber.StatusOK).JSON(newUser)
 }
 
@@ -129,7 +129,7 @@ func ChangePassword(c *fiber.Ctx) error {
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidChangePassword(userId.Hex())
+  logger.GetLogger().DidChangePassword(userId.String())
   return c.SendStatus(fiber.StatusOK)
 }
 
