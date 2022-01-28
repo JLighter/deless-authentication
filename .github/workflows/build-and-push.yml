@@ -1,0 +1,32 @@
+name: Build and push workflow
+
+on:
+  workflow_call:
+    inputs:
+      imageName: 
+        required: true
+        type: string
+      registry:
+        required: false
+        type: string
+        default: ghcr.io
+      username:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+   
+jobs:
+  build:
+    name: Build docker image and deploy to github registry
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checking out
+      uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ inputs.imageName }}
+    - name: Login to github registry
+      run: echo ${{ secrets.token }} | docker login ${{ inputs.registry }} --username ${{ inputs.username }} --password-stdin
+    - name: Deploy to github registry
+      run: docker push ${{ inputs.imageName }}

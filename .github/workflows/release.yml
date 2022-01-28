@@ -1,0 +1,23 @@
+name: Release CI/CD
+
+on:
+  push:
+    tags: 
+      - "*.*.*"
+  workflow_dispatch:
+   
+jobs:
+  test:
+    name: Unit-test
+    uses: ./.github/workflows/unit-test.yml
+
+  build-and-push:
+    needs: test
+    name: Build docker image and deploy to github registry
+    uses: ./.github/workflows/build-and-push.yml
+    with: 
+      imageName: ghcr.io/jlighter/deless/authentitcation:$GITHUB_REF_NAME
+      username: JLighter
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+

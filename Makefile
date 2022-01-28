@@ -19,5 +19,8 @@ release-major:
 build: main
 	go build main.go
 
+test:
+	go test ./...
+
 dockerize:
 	docker build . -t ${IMAGE_NAME}:${IMAGE_VERSION}
