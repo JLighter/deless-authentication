@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+on:
+  push:
+    tags: 
+      - "*.*.*"
+env: 
+  IMAGE_TAG: ghcr.io/JLighter/deless/authentitcation:$GITHUB_REF_NAME
+
+jobs:
+  build:
+    name: Build docker image and deploy to github registry
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2.4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag $IMAGE_TAG
+    - name: Login to github registry
+      run: docker login --username JLighter --password $GITHUB_TOKEN
+    - name: Deploy to github registry
+      run: docker push $IMAGE_TAG
