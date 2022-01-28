@@ -19,6 +19,6 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:$GITHUB_REF_NAME
     - name: Login to github registry
-      run: docker login --username JLighter --password $GITHUB_TOKEN
+      run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username JLighter --password-stdin
     - name: Deploy to github registry
-      run: docker push $IMAGE_TAG
+      run: docker push $IMAGE_NAME:$GITHUB_REF_NAME
