@@ -4,8 +4,11 @@ on:
   push:
     tags: 
       - "*.*.*"
+   workflow_dispatch:
+   
 env: 
   IMAGE_TAG: ghcr.io/JLighter/deless/authentitcation:$GITHUB_REF_NAME
+  
 
 jobs:
   build:
