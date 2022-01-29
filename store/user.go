@@ -24,7 +24,6 @@ func NewUserStore(ctx context.Context, client *mongo.Client) *UserStore {
 
 type User struct {
   Id       primitive.ObjectID `json:"id" binding:"required" bson:"_id,omitempty"`
-  Username string `json:"username" binding:"required" bson:"username"`
   Email    string `json:"email" binding:"required" bson:"email"`
   Admin    bool   `json:"-" bson:"admin"`
 }

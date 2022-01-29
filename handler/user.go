@@ -50,7 +50,6 @@ func (h *Handler) RegisterUser(c *fiber.Ctx) error {
 
   id, err := h.userStore.RegisterUser(store.User{
     Email: c.FormValue("email"),
-    Username: c.FormValue("username"),
     Admin: false,
   })
 
@@ -92,7 +91,6 @@ func (h *Handler) UpdateSelf(c *fiber.Ctx) error {
   newUser := store.User{
     Id: userId,
     Email: c.FormValue("email"),
-    Username: c.FormValue("username"),
     Admin: user.Admin,
   }
 
