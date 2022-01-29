@@ -8,7 +8,7 @@ import { sleep } from 'k6';
 //   ]
 // };
 
-// Load test
+// // Load test
 // export const options = {
 //   stages: [
 //     { duration: '5m', target: 100 }, // ramp-down to 0 users
@@ -70,8 +70,7 @@ const register = (baseUrl, email, password) => {
   const url = baseUrl + '/user';
   const payload = {
     email,
-    password,
-    username: 'john',
+    password
   };
 
   return http.post(url, payload);
@@ -100,23 +99,16 @@ const getUser = (baseUrl, token) => {
   return http.get(url, params);
 };
 
-const home = (baseUrl) => {
-  return http.get(baseUrl);
-}
-
-
 export default function() {
   const port = 8000 
   const baseUrl = `http://localhost:${port}/api`;
   const email = makeid(25) + '@email.com';
   const password = 'password';
 
-  home(baseUrl);
-  sleep(0.1);
   register(baseUrl, email, password);
-  sleep(0.1);
+  sleep(1);
   const token = getToken(baseUrl, email, password);
-  sleep(0.1);
+  sleep(1);
   getUser(baseUrl, token);
-  sleep(0.1);
+  sleep(1);
 }
