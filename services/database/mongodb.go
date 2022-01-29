@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"glog/config"
 	"log"
+	"os"
 	"sync"
 
 	"context"
@@ -33,7 +33,7 @@ func GetMongoDB() *MongoDB {
         ctx := context.Background()
         client, err := connect(ctx)
         if err != nil {
-            log.Fatalf("Cannot connect to mongodb: %v", err)
+            log.Fatalf("cannot connect to mongodb: %v", err)
         }
 
         instance = &MongoDB{
@@ -45,14 +45,14 @@ func GetMongoDB() *MongoDB {
 }
 
 func connect(ctx context.Context) (*mongo.Client, error) {
-  uri, err := config.Config("MONGO_URI")
-  if err != nil {
-    return nil, fmt.Errorf("Cannot read MONGO_URL variable: %v", err)
+  uri := os.Getenv("MONGO_URI")
+  if uri == "" {
+    return nil, fmt.Errorf("MONGO_URI environment variable is empty")
   }
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
   if err != nil {
-    return nil, fmt.Errorf("Cannot connect to mongodb: %v", err)
+    return nil, err
   }
 
   return client, nil
@@ -61,7 +61,7 @@ func connect(ctx context.Context) (*mongo.Client, error) {
 func (m *MongoDB) Ping() error {
   err := m.client.Ping(m.ctx, nil)
   if err != nil {
-    return fmt.Errorf("Cannot ping mongodb: %v", err)
+    return fmt.Errorf("cannot ping mongodb: %v", err)
   }
 
   return nil

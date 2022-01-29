@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"glog/config"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v2"
@@ -10,10 +10,9 @@ import (
 
 // Protected protect routes
 func Protected() fiber.Handler {
-  secret, err := config.Config("SECRET")
-
-  if err != nil {
-    log.Fatalf("cannot get SECRET variable: %s", err)
+  secret := os.Getenv("SECRET")
+  if secret == "" {
+    log.Fatal("cannot sign token: SECRET environment variable is not set")
   }
 
 	return jwtware.New(jwtware.Config{

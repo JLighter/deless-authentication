@@ -2,22 +2,23 @@ package token
 
 import (
 	"fmt"
-	"glog/config"
+	"log"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 )
 
+var DEFAULT_EXPIRATION_TIME = 3600
+
 func createClaim(id string) (*jwt.MapClaims, error) {
-	token_expire, err := config.Config("TOKEN_EXPIRE")
-	if err != nil {
-		return nil, fmt.Errorf("cannot get TOKEN_EXPIRE variable : %s", err)
-	}
+	token_expire := os.Getenv("TOKEN_EXPIRE")
 
 	expire, err := strconv.Atoi(token_expire)
 	if err != nil {
-		return nil, fmt.Errorf("cannot convert TOKEN_EXPIRE to integer : %s", err)
+    log.Printf("cannot convert TOKEN_EXPIRE to integer : %s (fallback to DEFAULT:3600)", err)
+    expire = DEFAULT_EXPIRATION_TIME
 	}
 
 	return &jwt.MapClaims{
@@ -34,10 +35,10 @@ func GenerateToken(id string, admin bool) (string, error) {
 
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 
-	secret, err := config.Config("SECRET")
-	if err != nil {
-		return "", fmt.Errorf("cannot get secret: %s", err)
-	}
+	secret := os.Getenv("SECRET")
+  if secret == "" {
+    return "", fmt.Errorf("cannot generate token: SECRET environment variable is not set")
+  }
 
 	tokenString, err := newToken.SignedString([]byte(secret))
 	if err != nil {
