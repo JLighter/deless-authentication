@@ -3,8 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
-	"glog/services/database"
-	"glog/services/logger"
+	"glog/store"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
@@ -24,22 +23,16 @@ func getUserId(c *fiber.Ctx) (primitive.ObjectID, error) {
   }
 }
 
-func GetUser(c *fiber.Ctx) error {
+func (h *Handler) GetUser(c *fiber.Ctx) error {
   userId, err := getUserId(c)
   if err != nil {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-  db, err := database.GetMongoDB()
-  if err != nil {
-    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
-    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
-  }
-
-  user, err := db.GetUserById(userId)
+  user, err := h.userStore.GetUserById(userId)
 
   if err != nil {
-    logger.GetLogger().CannotGetUser(err.Error())
+    h.logger.CannotGetUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
   if user == nil {
@@ -49,109 +42,91 @@ func GetUser(c *fiber.Ctx) error {
   return c.Status(fiber.StatusOK).JSON(user)
 }
 
-func RegisterUser(c *fiber.Ctx) error {
+func (h *Handler) RegisterUser(c *fiber.Ctx) error {
 
-  db, err := database.GetMongoDB()
-  if err != nil {
-    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
-    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
-  }
-
-  if exists := db.UserExists(c.FormValue("email")); exists == true {
+  if exists := h.userStore.UserExists(c.FormValue("email")); exists == true {
     return c.SendStatus(fiber.StatusOK)
   }
 
-  id, err := db.RegisterUser(database.User{
+  id, err := h.userStore.RegisterUser(store.User{
     Email: c.FormValue("email"),
     Username: c.FormValue("username"),
     Admin: false,
   })
 
   if err != nil {
-    logger.GetLogger().CannotCreateUser(err.Error())
+    h.logger.CannotCreateUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  err = db.InsertPassword(database.Password{
+  err = h.passwordStore.InsertPassword(store.Password{
     UserId: id,
     Value: c.FormValue("password"),
   })
 
   if err != nil {
-    logger.GetLogger().CannotCreatePassword(err.Error())
+    h.logger.CannotCreatePassword(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidCreateUser(id.String())
+  h.logger.DidCreateUser(id.String())
   return c.SendStatus(fiber.StatusOK)
 }
 
-func UpdateSelf(c *fiber.Ctx) error {
-
-  db, err := database.GetMongoDB()
-  if err != nil {
-    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
-    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
-  }
+func (h *Handler) UpdateSelf(c *fiber.Ctx) error {
 
   userId, err := getUserId(c)
   if err != nil {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-  user, err := db.GetUserById(userId)
+  user, err := h.userStore.GetUserById(userId)
   if err != nil {
-    logger.GetLogger().CannotGetUser(err.Error())
+    h.logger.CannotGetUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
   if user == nil {
     return c.SendStatus(fiber.StatusNotFound)
   }
 
-  newUser := database.User{
+  newUser := store.User{
     Id: userId,
     Email: c.FormValue("email"),
     Username: c.FormValue("username"),
     Admin: user.Admin,
   }
 
-  err = db.UpdateUser(newUser)
+  err = h.userStore.UpdateUser(newUser)
   if err != nil {
-    logger.GetLogger().CannotUpdateUser(err.Error())
+    h.logger.CannotUpdateUser(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidUpdateUser(userId.String())
+  h.logger.DidUpdateUser(userId.String())
   return c.Status(fiber.StatusOK).JSON(newUser)
 }
 
-func ChangePassword(c *fiber.Ctx) error {
+func (h *Handler) ChangePassword(c *fiber.Ctx) error {
   userId, err := getUserId(c)
   if err != nil {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
   password := c.FormValue("password")
 
-  db, err := database.GetMongoDB()
-  if err != nil {
-    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
-    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
-  }
-
-  err = db.ChangePassword(database.Password{
+  err = h.passwordStore.ChangePassword(store.Password{
     UserId: userId,
     Value: password,
   })
 
   if err != nil {
-    logger.GetLogger().CannotChangePassword(err.Error())
+    h.logger.CannotChangePassword(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidChangePassword(userId.String())
+  h.logger.DidChangePassword(userId.String())
   return c.SendStatus(fiber.StatusOK)
 }
 
-func DeleteUser(c *fiber.Ctx) error {
+func (h *Handler) DeleteUser(c *fiber.Ctx) error {
   return c.SendStatus(fiber.StatusNotImplemented)
 }

@@ -1,35 +1,27 @@
 package handler
 
 import (
-	"glog/services/database"
-	"glog/services/logger"
 	"glog/services/token"
+	"glog/store"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func Login(c *fiber.Ctx) error {
+func (h *Handler) Login(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	db, err := database.GetMongoDB()
-  
-  if err != nil {
-    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
-    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
-  }
-
-  user, err := db.GetUserByEmail(email)
+  user, err := h.userStore.GetUserByEmail(email)
 
   if err != nil {
-    logger.GetLogger().CannotComparePassword(err.Error())
+    h.logger.CannotComparePassword(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   } else if user == nil {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-	if ok, err := db.ComparePassword(database.Password{UserId: user.Id, Value: password}); err != nil {
-    logger.GetLogger().CannotComparePassword(err.Error())
+	if ok, err := h.passwordStore.ComparePassword(store.Password{UserId: user.Id, Value: password}); err != nil {
+    h.logger.CannotComparePassword(err.Error())
 		return c.SendStatus(fiber.StatusInternalServerError)
 	} else if !ok {
 		return c.SendStatus(fiber.StatusUnauthorized)
@@ -37,10 +29,10 @@ func Login(c *fiber.Ctx) error {
 
 	token, err := token.GenerateToken(user.Id.Hex(), false)
   if err != nil {
-    logger.GetLogger().CannotGenerateToken(err.Error())
+    h.logger.CannotGenerateToken(err.Error())
     return c.SendStatus(fiber.StatusInternalServerError)
   }
 
-  logger.GetLogger().DidLogin(user.Id.Hex(), c.IP())
+  h.logger.DidLogin(user.Id.Hex(), c.IP())
 	return c.JSON(fiber.Map{"token": token})
 }

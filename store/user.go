@@ -1,6 +1,7 @@
-package database
+package store
 
 import (
+	"context"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +13,15 @@ const DATABASE_NAME = "auth"
 const USERS_COLLECTION = "users"
 const PASSWORD_COLLECTION = "passwords"
 
+type UserStore struct {
+  ctx context.Context
+  client *mongo.Client
+}
+
+func NewUserStore(ctx context.Context, client *mongo.Client) *UserStore {
+  return &UserStore{ctx, client}
+}
+
 type User struct {
   Id       primitive.ObjectID `json:"id" binding:"required" bson:"_id,omitempty"`
   Username string `json:"username" binding:"required" bson:"username"`
@@ -19,14 +29,14 @@ type User struct {
   Admin    bool   `json:"-" bson:"admin"`
 }
 
-func (d *MongoDB) getUserCollection() *mongo.Collection {
+func (d *UserStore) getUserCollection() *mongo.Collection {
   database := d.client.Database(DATABASE_NAME)
   users := database.Collection(USERS_COLLECTION)
 
   return users
 }
 
-func (d *MongoDB) UserExists(email string) bool {
+func (d *UserStore) UserExists(email string) bool {
   users := d.getUserCollection()
 
   var user User;
@@ -38,7 +48,7 @@ func (d *MongoDB) UserExists(email string) bool {
   return true
 }
 
-func (d *MongoDB) RegisterUser(user User) (primitive.ObjectID, error) {
+func (d *UserStore) RegisterUser(user User) (primitive.ObjectID, error) {
   users := d.getUserCollection()
 
   result, err := users.InsertOne(d.ctx, user)
@@ -50,7 +60,7 @@ func (d *MongoDB) RegisterUser(user User) (primitive.ObjectID, error) {
   return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (d *MongoDB) UpdateUser(user User) error {
+func (d *UserStore) UpdateUser(user User) error {
   users := d.getUserCollection()
 
   _, err := users.ReplaceOne(d.ctx, bson.M{"_id": user.Id}, user)
@@ -61,7 +71,7 @@ func (d *MongoDB) UpdateUser(user User) error {
 	return nil
 }
 
-func (d *MongoDB) GetUserById(id primitive.ObjectID) (*User, error) {
+func (d *UserStore) GetUserById(id primitive.ObjectID) (*User, error) {
   users := d.getUserCollection()
 
   var user User;
@@ -73,7 +83,7 @@ func (d *MongoDB) GetUserById(id primitive.ObjectID) (*User, error) {
 	return &user, nil
 }
 
-func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
+func (d *UserStore) GetUserByEmail(email string) (*User, error) {
   users := d.getUserCollection()
 
   var user User;
@@ -85,7 +95,7 @@ func (d *MongoDB) GetUserByEmail(email string) (*User, error) {
   return &user, nil
 }
 
-func (d *MongoDB) DeleteUser(id string) error {
+func (d *UserStore) DeleteUser(id string) error {
   users := d.getUserCollection()
 
   _, err := users.DeleteOne(d.ctx, bson.M{"_id": id})

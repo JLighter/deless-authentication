@@ -1,6 +1,7 @@
-package database
+package store
 
 import (
+	"context"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,21 +10,29 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type PasswordStore struct {
+  ctx context.Context
+  client  *mongo.Client
+}
+
 type Password struct {
   Id        primitive.ObjectID `json:"id" binding:"required" bson:"_id,omitempty"`
   UserId    primitive.ObjectID `json:"userid" binding:"required" bson:"userid"`
   Value     string `json:"value" binding:"required" bson:"value"`
 }
 
-func (d *MongoDB) getPasswordCollection() *mongo.Collection {
-  database := d.client.Database(DATABASE_NAME)
+func NewPasswordStore(ctx context.Context, client *mongo.Client) *PasswordStore {
+  return &PasswordStore{ctx, client}
+}
+
+func (s *PasswordStore) getPasswordCollection() *mongo.Collection {
+  database := s.client.Database(DATABASE_NAME)
   passwords := database.Collection(PASSWORD_COLLECTION)
 
   return passwords
 }
 
-// Hash password using bcrypt
-func (d *MongoDB) hashPassword(password string) (string, error) {
+func (s *PasswordStore) hashPassword(password string) (string, error) {
   hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
   if err != nil {
     return "", fmt.Errorf("Error hashing password: %v", err)
@@ -32,12 +41,12 @@ func (d *MongoDB) hashPassword(password string) (string, error) {
   return string(hashedPassword), nil
 }
 
-func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
-  passwords := d.getPasswordCollection()
+func (s *PasswordStore) ComparePassword(toCompare Password) (bool, error) {
+  passwords := s.getPasswordCollection()
 
   var password Password;
 
-  err := passwords.FindOne(d.ctx, bson.M{"userid": toCompare.UserId}).Decode(&password)
+  err := passwords.FindOne(s.ctx, bson.M{"userid": toCompare.UserId}).Decode(&password)
   if err != nil {
     return false, nil
   }
@@ -50,9 +59,9 @@ func (d *MongoDB) ComparePassword(toCompare Password) (bool, error) {
   return true, nil
 }
 
-func (d *MongoDB) ChangePassword(newPassword Password) error {
-  passwords := d.getPasswordCollection()
-  hashedPasswordValue, err := d.hashPassword(newPassword.Value)
+func (s *PasswordStore) ChangePassword(newPassword Password) error {
+  passwords := s.getPasswordCollection()
+  hashedPasswordValue, err := s.hashPassword(newPassword.Value)
 
   if err != nil {
     return fmt.Errorf("error hashing password: %v", err)
@@ -60,7 +69,7 @@ func (d *MongoDB) ChangePassword(newPassword Password) error {
 
   newPassword.Value = hashedPasswordValue
 
-  _, err = passwords.ReplaceOne(d.ctx, bson.M{"userid": newPassword.UserId}, newPassword)
+  _, err = passwords.ReplaceOne(s.ctx, bson.M{"userid": newPassword.UserId}, newPassword)
 	if err != nil {
     return fmt.Errorf("error updating password: %v", err)
 	}
@@ -68,9 +77,9 @@ func (d *MongoDB) ChangePassword(newPassword Password) error {
 	return nil
 }
 
-func (d *MongoDB) InsertPassword(password Password) error {
-  passwords := d.getPasswordCollection()
-  hashedPasswordValue, err := d.hashPassword(password.Value)
+func (s *PasswordStore) InsertPassword(password Password) error {
+  passwords := s.getPasswordCollection()
+  hashedPasswordValue, err := s.hashPassword(password.Value)
 
   if err != nil {
     return fmt.Errorf("error hashing password: %v", err)
@@ -78,7 +87,7 @@ func (d *MongoDB) InsertPassword(password Password) error {
 
   password.Value = hashedPasswordValue
 
-  _, err = passwords.InsertOne(d.ctx, password)
+  _, err = passwords.InsertOne(s.ctx, password)
   if err != nil {
     return fmt.Errorf("error setting password: %v", err)
   }
