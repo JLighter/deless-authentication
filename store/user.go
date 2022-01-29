@@ -15,11 +15,11 @@ const PASSWORD_COLLECTION = "passwords"
 
 type UserStore struct {
   ctx context.Context
-  client *mongo.Client
+  database *mongo.Database
 }
 
-func NewUserStore(ctx context.Context, client *mongo.Client) *UserStore {
-  return &UserStore{ctx, client}
+func NewUserStore(ctx context.Context, database *mongo.Database) *UserStore {
+  return &UserStore{ctx, database}
 }
 
 type User struct {
@@ -28,18 +28,17 @@ type User struct {
   Admin    bool   `json:"-" bson:"admin"`
 }
 
-func (d *UserStore) getUserCollection() *mongo.Collection {
-  database := d.client.Database(DATABASE_NAME)
-  users := database.Collection(USERS_COLLECTION)
+func (s *UserStore) getUserCollection() *mongo.Collection {
+  users := s.database.Collection(USERS_COLLECTION)
 
   return users
 }
 
-func (d *UserStore) UserExists(email string) bool {
-  users := d.getUserCollection()
+func (s *UserStore) UserExists(email string) bool {
+  users := s.getUserCollection()
 
   var user User;
-  err := users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
+  err := users.FindOne(s.ctx, bson.M{"email": email}).Decode(&user)
   if err != nil {
     return false
   }
@@ -47,10 +46,10 @@ func (d *UserStore) UserExists(email string) bool {
   return true
 }
 
-func (d *UserStore) RegisterUser(user User) (primitive.ObjectID, error) {
-  users := d.getUserCollection()
+func (s *UserStore) RegisterUser(user User) (primitive.ObjectID, error) {
+  users := s.getUserCollection()
 
-  result, err := users.InsertOne(d.ctx, user)
+  result, err := users.InsertOne(s.ctx, user)
 
 	if err != nil {
 		return primitive.NilObjectID, fmt.Errorf("error saving user: %v", err)
@@ -59,10 +58,10 @@ func (d *UserStore) RegisterUser(user User) (primitive.ObjectID, error) {
   return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (d *UserStore) UpdateUser(user User) error {
-  users := d.getUserCollection()
+func (s *UserStore) UpdateUser(user User) error {
+  users := s.getUserCollection()
 
-  _, err := users.ReplaceOne(d.ctx, bson.M{"_id": user.Id}, user)
+  _, err := users.ReplaceOne(s.ctx, bson.M{"_id": user.Id}, user)
 	if err != nil {
 		return fmt.Errorf("error updating database: %v", err)
 	}
@@ -70,11 +69,11 @@ func (d *UserStore) UpdateUser(user User) error {
 	return nil
 }
 
-func (d *UserStore) GetUserById(id primitive.ObjectID) (*User, error) {
-  users := d.getUserCollection()
+func (s *UserStore) GetUserById(id primitive.ObjectID) (*User, error) {
+  users := s.getUserCollection()
 
   var user User;
-  err := users.FindOne(d.ctx, bson.M{"_id": id}).Decode(&user)
+  err := users.FindOne(s.ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
 		return nil, nil 
 	}
@@ -82,11 +81,11 @@ func (d *UserStore) GetUserById(id primitive.ObjectID) (*User, error) {
 	return &user, nil
 }
 
-func (d *UserStore) GetUserByEmail(email string) (*User, error) {
-  users := d.getUserCollection()
+func (s *UserStore) GetUserByEmail(email string) (*User, error) {
+  users := s.getUserCollection()
 
   var user User;
-  err := users.FindOne(d.ctx, bson.M{"email": email}).Decode(&user)
+  err := users.FindOne(s.ctx, bson.M{"email": email}).Decode(&user)
   if err != nil {
     return nil, nil 
   }
@@ -94,10 +93,10 @@ func (d *UserStore) GetUserByEmail(email string) (*User, error) {
   return &user, nil
 }
 
-func (d *UserStore) DeleteUser(id string) error {
-  users := d.getUserCollection()
+func (s *UserStore) DeleteUser(id string) error {
+  users := s.getUserCollection()
 
-  _, err := users.DeleteOne(d.ctx, bson.M{"_id": id})
+  _, err := users.DeleteOne(s.ctx, bson.M{"_id": id})
   if err != nil {
     return fmt.Errorf("error deleting user: %v", err)
   }

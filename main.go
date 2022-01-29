@@ -15,6 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var DATABASE_NAME = "auth"
+
 func loadEnvironmentFile(logger *logger.StandardLogger) {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -64,8 +66,10 @@ func main() {
 
   registerHealthz(app, db, logger)
 
-  passwordStore := store.NewPasswordStore(context.Background(), db)
-  userStore := store.NewUserStore(context.Background(), db)
+  database := db.Database(DATABASE_NAME)
+
+  passwordStore := store.NewPasswordStore(context.Background(), database)
+  userStore := store.NewUserStore(context.Background(), database)
 
   handler := handler.NewHandler(userStore, passwordStore, logger)
   handler.Register(app)

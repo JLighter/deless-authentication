@@ -10,9 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const PASSWORD_COLLECTION = "passwords"
+
 type PasswordStore struct {
   ctx context.Context
-  client  *mongo.Client
+  database  *mongo.Database
 }
 
 type Password struct {
@@ -21,13 +23,12 @@ type Password struct {
   Value     string `json:"value" binding:"required" bson:"value"`
 }
 
-func NewPasswordStore(ctx context.Context, client *mongo.Client) *PasswordStore {
-  return &PasswordStore{ctx, client}
+func NewPasswordStore(ctx context.Context, database *mongo.Database) *PasswordStore {
+  return &PasswordStore{ctx, database}
 }
 
 func (s *PasswordStore) getPasswordCollection() *mongo.Collection {
-  database := s.client.Database(DATABASE_NAME)
-  passwords := database.Collection(PASSWORD_COLLECTION)
+  passwords := s.database.Collection(PASSWORD_COLLECTION)
 
   return passwords
 }
