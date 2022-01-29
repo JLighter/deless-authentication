@@ -7,6 +7,7 @@ import (
 	"glog/services/logger"
 	"glog/store"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -38,7 +39,11 @@ func connectToMongo(logger *logger.StandardLogger) *mongo.Client {
     logger.CannotGetMongoDBInstance("MONGO_URI environment variable is not set")
     panic("Cannot get mongoDB uri")
   }
-	db, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
+
+  ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+  defer cancel()
+
+	db, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
   if err != nil {
     logger.CannotGetMongoDBInstance("cannot connect to mongoDB")
     panic("Cannot connect to mongoDB")
