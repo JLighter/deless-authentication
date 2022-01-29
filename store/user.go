@@ -64,7 +64,7 @@ func (d *UserStore) UpdateUser(user User) error {
 
   _, err := users.ReplaceOne(d.ctx, bson.M{"_id": user.Id}, user)
 	if err != nil {
-		return fmt.Errorf("Error updating database: %v", err)
+		return fmt.Errorf("error updating database: %v", err)
 	}
 
 	return nil
@@ -99,7 +99,7 @@ func (d *UserStore) DeleteUser(id string) error {
 
   _, err := users.DeleteOne(d.ctx, bson.M{"_id": id})
   if err != nil {
-    return fmt.Errorf("Error deleting user: %v", err)
+    return fmt.Errorf("error deleting user: %v", err)
   }
 
   return nil
