@@ -9,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const DATABASE_NAME = "auth"
 const USERS_COLLECTION = "users"
-const PASSWORD_COLLECTION = "passwords"
 
 type UserStore struct {
   ctx context.Context

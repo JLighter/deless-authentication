@@ -38,24 +38,25 @@ func NewLogger() *StandardLogger {
 
 // Declare variables to store log messages as new Events
 var (
-	appCrashedMessage               = Event{2, "APPLICATION_CRASHED"}
+	appCrashedMessage               = Event{1, "APPLICATION_CRASHED"}
 
-	cannotLoadEnvironmentFile       = Event{4, "CANNOT_LOAD_ENVIRONMENT_FILE"}
+	cannotLoadEnvironmentFile       = Event{2, "CANNOT_LOAD_ENVIRONMENT_FILE"}
 
 	cannotPingMongoDBMessage        = Event{3, "CANNOT_PING_MONGODB"}
 	cannotGetMongoDBInstanceMessage = Event{4, "CANNOT_GET_MONGODB_INSTANCE"}
+	cannotMigrateDatabaseMessage    = Event{5, "CANNOT_MIGRATE_DATABASE"}
   
-	cannotGetUserMessage            = Event{5, "CANNOT_GET_USER"}
-	cannotCreateUserMessage         = Event{6, "CANNOT_CREATE_USER"}
-	cannotUpdateUserMessage         = Event{7, "CANNOT_UPDATE_USER"}
-	cannotGenerateTokenMessage      = Event{8, "CANNOT_GENERATE_TOKEN"}
-	cannotCreatePasswordMessage     = Event{9, "CANNOT_CREATE_PASSWORD"}
-	cannotComparePasswordMessage    = Event{10, "CANNOT_COMPARE_PASSWORD"}
-	cannotUpdatePasswordMessage     = Event{11, "CANNOT_UPDATE_PASSWORD"}
+	cannotGetUserMessage            = Event{6, "CANNOT_GET_USER"}
+	cannotCreateUserMessage         = Event{7, "CANNOT_CREATE_USER"}
+	cannotUpdateUserMessage         = Event{8, "CANNOT_UPDATE_USER"}
+	cannotGenerateTokenMessage      = Event{9, "CANNOT_GENERATE_TOKEN"}
+	cannotCreatePasswordMessage     = Event{10, "CANNOT_CREATE_PASSWORD"}
+	cannotComparePasswordMessage    = Event{11, "CANNOT_COMPARE_PASSWORD"}
+	cannotUpdatePasswordMessage     = Event{12, "CANNOT_UPDATE_PASSWORD"}
 
-	didCreateUserMessage            = Event{12, "CREATED_USER"}
-	didDeleteUserMessage            = Event{13, "DELETE_USER"}
-	didUpdateUserMessage            = Event{14, "UPDATE_USER"}
+	didCreateUserMessage            = Event{13, "CREATED_USER"}
+	didDeleteUserMessage            = Event{14, "DELETE_USER"}
+	didUpdateUserMessage            = Event{15, "UPDATE_USER"}
 
 	didChangePasswordMessage        = Event{15, "CHANGE_USER_PASSWORD"}
 
@@ -68,6 +69,10 @@ func (l *StandardLogger) ApplicationCrashed(reason string) {
 
 func (l *StandardLogger) CannotLoadEnvironmentFile(reason string) {
   l.WithField("reason", reason).Errorf(cannotLoadEnvironmentFile.message)
+}
+
+func (l *StandardLogger) CannotMigrateDatabase(reason string) {
+  l.WithField("reason", reason).Errorf(cannotMigrateDatabaseMessage.message)
 }
 
 func (l *StandardLogger) CannotGetMongoDBInstance(reason string) {

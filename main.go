@@ -13,6 +13,9 @@ import (
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+  migrate "github.com/xakep666/mongo-migrate"
+  _ "glog/migrations"
 )
 
 var DATABASE_NAME = "auth"
@@ -67,6 +70,11 @@ func main() {
   registerHealthz(app, db, logger)
 
   database := db.Database(DATABASE_NAME)
+  migrate.SetDatabase(database)
+  if err := migrate.Up(migrate.AllAvailable); err != nil {
+    logger.CannotMigrateDatabase(err.Error())
+    panic("Cannot migrate database")
+	}
 
   passwordStore := store.NewPasswordStore(context.Background(), database)
   userStore := store.NewUserStore(context.Background(), database)
