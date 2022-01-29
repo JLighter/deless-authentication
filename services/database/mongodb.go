@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -11,11 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type DatabaseDriver interface {
-  connect() (interface{}, error)
-  disconnect(interface{}) error
-}
 
 type MongoDB struct {
   ctx context.Context
@@ -26,14 +20,14 @@ var lock = &sync.Mutex{}
 
 var instance *MongoDB
 
-func GetMongoDB() *MongoDB {
+func GetMongoDB() (*MongoDB, error) {
     lock.Lock()
     defer lock.Unlock()
     if instance == nil {
         ctx := context.Background()
         client, err := connect(ctx)
         if err != nil {
-            log.Fatalf("cannot connect to mongodb: %v", err)
+            return nil, fmt.Errorf("cannot connect to mongodb: %v", err)
         }
 
         instance = &MongoDB{
@@ -41,7 +35,7 @@ func GetMongoDB() *MongoDB {
           client: client,
         }
     }
-    return instance
+    return instance, nil
 }
 
 func connect(ctx context.Context) (*mongo.Client, error) {

@@ -38,28 +38,34 @@ func NewLogger() *StandardLogger {
 
 // Declare variables to store log messages as new Events
 var (
-	appCrashedMessage            = Event{1, "APPLICATION_CRASHED"}
+	appCrashedMessage               = Event{1, "APPLICATION_CRASHED"}
 
-	cannotPingMongoDBMessage     = Event{2, "CANNOT_PING_MONGODB"}
-	cannotGetUserMessage         = Event{3, "CANNOT_GET_USER"}
-	cannotCreateUserMessage      = Event{4, "CANNOT_CREATE_USER"}
-	cannotUpdateUserMessage      = Event{5, "CANNOT_UPDATE_USER"}
-	cannotGenerateTokenMessage   = Event{6, "CANNOT_GENERATE_TOKEN"}
-	cannotCreatePasswordMessage  = Event{7, "CANNOT_CREATE_PASSWORD"}
-	cannotComparePasswordMessage = Event{8, "CANNOT_COMPARE_PASSWORD"}
-	cannotUpdatePasswordMessage  = Event{9, "CANNOT_UPDATE_PASSWORD"}
+	cannotPingMongoDBMessage        = Event{2, "CANNOT_PING_MONGODB"}
+	cannotGetMongoDBInstanceMessage = Event{3, "CANNOT_GET_MONGODB_INSTANCE"}
+  
+	cannotGetUserMessage            = Event{4, "CANNOT_GET_USER"}
+	cannotCreateUserMessage         = Event{5, "CANNOT_CREATE_USER"}
+	cannotUpdateUserMessage         = Event{6, "CANNOT_UPDATE_USER"}
+	cannotGenerateTokenMessage      = Event{7, "CANNOT_GENERATE_TOKEN"}
+	cannotCreatePasswordMessage     = Event{8, "CANNOT_CREATE_PASSWORD"}
+	cannotComparePasswordMessage    = Event{9, "CANNOT_COMPARE_PASSWORD"}
+	cannotUpdatePasswordMessage     = Event{10, "CANNOT_UPDATE_PASSWORD"}
 
-	didCreateUserMessage         = Event{10, "CREATED_USER"}
-	didDeleteUserMessage         = Event{11, "DELETE_USER"}
-	didUpdateUserMessage         = Event{12, "UPDATE_USER"}
+	didCreateUserMessage            = Event{11, "CREATED_USER"}
+	didDeleteUserMessage            = Event{12, "DELETE_USER"}
+	didUpdateUserMessage            = Event{13, "UPDATE_USER"}
 
-	didChangePasswordMessage     = Event{13, "CHANGE_USER_PASSWORD"}
+	didChangePasswordMessage        = Event{14, "CHANGE_USER_PASSWORD"}
 
-	didLoginMessage              = Event{14, "USER_LOGGED_IN"}
+	didLoginMessage                 = Event{15, "USER_LOGGED_IN"}
 )
 
 func (l *StandardLogger) ApplicationCrashed(reason string) {
   l.WithField("reason", reason).Errorf(appCrashedMessage.message)
+}
+
+func (l *StandardLogger) CannotGetMongoDBInstance(reason string) {
+	l.WithField("reason", reason).Errorf(cannotGetMongoDBInstanceMessage.message)
 }
 
 func (l *StandardLogger) CannotPingMongoDB(reason string) {

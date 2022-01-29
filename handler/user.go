@@ -30,7 +30,12 @@ func GetUser(c *fiber.Ctx) error {
     return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-  db := database.GetMongoDB()
+  db, err := database.GetMongoDB()
+  if err != nil {
+    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
+    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+  }
+
   user, err := db.GetUserById(userId)
 
   if err != nil {
@@ -46,7 +51,11 @@ func GetUser(c *fiber.Ctx) error {
 
 func RegisterUser(c *fiber.Ctx) error {
 
-  db := database.GetMongoDB()
+  db, err := database.GetMongoDB()
+  if err != nil {
+    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
+    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+  }
 
   if exists := db.UserExists(c.FormValue("email")); exists == true {
     return c.SendStatus(fiber.StatusOK)
@@ -79,7 +88,12 @@ func RegisterUser(c *fiber.Ctx) error {
 
 func UpdateSelf(c *fiber.Ctx) error {
 
-  db := database.GetMongoDB()
+  db, err := database.GetMongoDB()
+  if err != nil {
+    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
+    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+  }
+
   userId, err := getUserId(c)
   if err != nil {
     return c.SendStatus(fiber.StatusUnauthorized)
@@ -118,7 +132,12 @@ func ChangePassword(c *fiber.Ctx) error {
   }
   password := c.FormValue("password")
 
-  db := database.GetMongoDB()
+  db, err := database.GetMongoDB()
+  if err != nil {
+    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
+    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+  }
+
   err = db.ChangePassword(database.Password{
     UserId: userId,
     Value: password,

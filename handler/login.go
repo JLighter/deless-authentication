@@ -12,7 +12,13 @@ func Login(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	db := database.GetMongoDB()
+	db, err := database.GetMongoDB()
+  
+  if err != nil {
+    logger.GetLogger().CannotGetMongoDBInstance(err.Error())
+    return c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+  }
+
   user, err := db.GetUserByEmail(email)
 
   if err != nil {
