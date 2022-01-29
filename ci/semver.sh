@@ -34,8 +34,10 @@ version_major=$(cat VERSION | grep -Eo "^[0-9]+")
 
 function push_git() {
   # Push the version tags to git
-  git tag -a "${version_major}.${version_minor}.${version_patch}-${version_build}" -m "${version_major}.${version_minor}.${version_patch}-${version_build}"
-  git push origin "${version_major}.${version_minor}.${version_patch}-${version_build}"
+  TAG="${version_major}.${version_minor}.${version_patch}-${version_build}"
+  git add VERSION && git commit -m "Update version to ${TAG}"
+  git tag -a $TAG -m $TAG
+  git push origin $TAG
 }
 
 echo "Existing version: ${version_major}.${version_minor}.${version_patch}-${version_build}"
