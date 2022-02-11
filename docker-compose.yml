@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  authentication:
+    build:
+      context: .
+    networks:
+    - backend
+    environment:
+      SECRET: verysecret
+      TOKEN_EXPIRE: 3600
+      MONGO_URI: mongodb://mongodb:27017/
+    ports:
+      - 8000:80
+  mongodb:
+    image: mongo:latest
+    networks:
+    - backend
+
+networks:
+  backend:
