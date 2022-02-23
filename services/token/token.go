@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+  "github.com/google/uuid"
 )
 
 var DEFAULT_EXPIRATION_TIME = 3600
 
-func createClaim(id string) (*jwt.MapClaims, error) {
+func createClaim(id string) (*jwt.RegisteredClaims, error) {
 	token_expire := os.Getenv("TOKEN_EXPIRE")
 
 	expire, err := strconv.Atoi(token_expire)
@@ -21,9 +22,14 @@ func createClaim(id string) (*jwt.MapClaims, error) {
     expire = DEFAULT_EXPIRATION_TIME
 	}
 
-	return &jwt.MapClaims{
-		"id":  id,
-		"exp": time.Now().Add(time.Second * time.Duration(expire)).Unix(),
+	return &jwt.RegisteredClaims{
+		Issuer:    "glog-authentication",
+		Subject:   id,
+		Audience:  []string{""},
+    ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expire))),
+		NotBefore: jwt.NewNumericDate(time.Now()),
+    IssuedAt:  jwt.NewNumericDate(time.Now()),
+    ID:        uuid.NewString(),
 	}, nil
 }
 
