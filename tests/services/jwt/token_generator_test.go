@@ -1,8 +1,8 @@
-package token_test
+package token_generator_test
 
 import (
 	"fmt"
-	"glog/services/token"
+	service "glog/services/jwt"
 	"os"
 	"strconv"
 	"testing"
@@ -17,7 +17,10 @@ var TOKEN_ISSUER = "glog"
 var DEFAULT_ID = "1"
 var DEFAULT_AUDIENCE = jwt.ClaimStrings{"https://localhost"}
 
+var generator *service.TokenGenerator
+
 func setupValidatorTests() func () {
+  generator = service.NewTokenGenerator()
   os.Setenv("SECRET", SECRET)
   os.Setenv("TOKEN_EXPIRE", strconv.Itoa(TOKEN_EXPIRE))
   os.Setenv("TOKEN_ISSUER", TOKEN_ISSUER)
@@ -35,7 +38,7 @@ func TestGenerateToken(t *testing.T) {
     teardown := setupValidatorTests()
     defer teardown()
 
-    token, _ := token.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
+    token, _ := generator.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
 
     assert.NotEmpty(t, token)
   })
@@ -50,7 +53,7 @@ func TestTokenClaimSubject(t *testing.T) {
 
     expected := "dummy"
 
-    jwtToken, _ := token.GenerateToken(expected, DEFAULT_AUDIENCE)
+    jwtToken, _ := generator.GenerateToken(expected, DEFAULT_AUDIENCE)
 
     claims := &jwt.RegisteredClaims{}
     jwt.ParseWithClaims(jwtToken, claims, func (token *jwt.Token) (interface{}, error) {
@@ -70,7 +73,7 @@ func TestTokenClaimIssuer(t *testing.T) {
 
     os.Unsetenv("TOKEN_ISSUER")
 
-    _, err := token.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
+    _, err := generator.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
 
     expectedError := fmt.Errorf("cannot generate claim: TOKEN_ISSUER environment variable is not set")
 
@@ -85,7 +88,7 @@ func TestTokenClaimIssuer(t *testing.T) {
 
     expected := TOKEN_ISSUER
 
-    jwtToken, _ := token.GenerateToken(expected, DEFAULT_AUDIENCE)
+    jwtToken, _ := generator.GenerateToken(expected, DEFAULT_AUDIENCE)
 
     claims := &jwt.RegisteredClaims{}
     jwt.ParseWithClaims(jwtToken, claims, func (token *jwt.Token) (interface{}, error) {
@@ -106,7 +109,7 @@ func TestTokenCypher(t *testing.T) {
 
     os.Unsetenv("SECRET")
 
-    _, err := token.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
+    _, err := generator.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
 
     expectedError := fmt.Errorf("cannot generate token: SECRET environment variable is not set")
 
@@ -119,7 +122,7 @@ func TestTokenCypher(t *testing.T) {
     teardown := setupValidatorTests()
     defer teardown()
 
-    jwtToken, _ := token.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
+    jwtToken, _ := generator.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
 
     claims := &jwt.RegisteredClaims{}
 
@@ -134,7 +137,7 @@ func TestTokenCypher(t *testing.T) {
     teardown := setupValidatorTests()
     defer teardown()
 
-    jwtToken, _ := token.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
+    jwtToken, _ := generator.GenerateToken(DEFAULT_ID, DEFAULT_AUDIENCE)
 
     claims := &jwt.RegisteredClaims{}
 
@@ -154,7 +157,7 @@ func TestTokenAudience(t *testing.T) {
 
     expected := jwt.ClaimStrings{"https://localhost"}
 
-    jwtToken, _ := token.GenerateToken(DEFAULT_ID, expected)
+    jwtToken, _ := generator.GenerateToken(DEFAULT_ID, expected)
 
     claims := &jwt.RegisteredClaims{}
     jwt.ParseWithClaims(jwtToken, claims, func (token *jwt.Token) (interface{}, error) {

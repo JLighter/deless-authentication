@@ -1,4 +1,4 @@
-package token
+package jwt
 
 import (
 	"fmt"
@@ -11,7 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func createClaim(id string, audiance []string) (*jwt.RegisteredClaims, error) {
+type TokenGenerator struct { }
+
+func NewTokenGenerator() *TokenGenerator {
+  return &TokenGenerator{}
+}
+
+func (t *TokenGenerator) createClaim(id string, audiance []string) (*jwt.RegisteredClaims, error) {
 	token_expire := os.Getenv("TOKEN_EXPIRE")
 
 	expire, err := strconv.Atoi(token_expire)
@@ -35,8 +41,8 @@ func createClaim(id string, audiance []string) (*jwt.RegisteredClaims, error) {
 	}, nil
 }
 
-func GenerateToken(id string, audiance []string) (string, error) {
-	claim, err := createClaim(id, audiance)
+func (t *TokenGenerator) GenerateToken(id string, audiance []string) (string, error) {
+	claim, err := t.createClaim(id, audiance)
 	if err != nil {
 		return "", fmt.Errorf("cannot generate claim: %s", err)
 	}
