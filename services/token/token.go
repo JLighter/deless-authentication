@@ -8,24 +8,26 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-  "github.com/google/uuid"
+	"github.com/google/uuid"
 )
 
-var DEFAULT_EXPIRATION_TIME = 3600
-
-func createClaim(id string) (*jwt.RegisteredClaims, error) {
+func createClaim(id string, audiance []string) (*jwt.RegisteredClaims, error) {
 	token_expire := os.Getenv("TOKEN_EXPIRE")
 
 	expire, err := strconv.Atoi(token_expire)
 	if err != nil {
-    log.Printf("cannot convert TOKEN_EXPIRE to integer : %s (fallback to DEFAULT:3600)", err)
-    expire = DEFAULT_EXPIRATION_TIME
+    log.Printf("cannot convert TOKEN_EXPIRE to integer : %s", err)
 	}
 
+	token_issuer := os.Getenv("TOKEN_ISSUER")
+  if token_issuer == "" {
+    return nil, fmt.Errorf("TOKEN_ISSUER environment variable is not set")
+  }
+
 	return &jwt.RegisteredClaims{
-		Issuer:    "glog-authentication",
+    Issuer:    token_issuer,
 		Subject:   id,
-		Audience:  []string{""},
+		Audience:  audiance,
     ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expire))),
 		NotBefore: jwt.NewNumericDate(time.Now()),
     IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -33,8 +35,8 @@ func createClaim(id string) (*jwt.RegisteredClaims, error) {
 	}, nil
 }
 
-func GenerateToken(id string, admin bool) (string, error) {
-	claim, err := createClaim(id)
+func GenerateToken(id string, audiance []string) (string, error) {
+	claim, err := createClaim(id, audiance)
 	if err != nil {
 		return "", fmt.Errorf("cannot generate claim: %s", err)
 	}
@@ -53,3 +55,4 @@ func GenerateToken(id string, admin bool) (string, error) {
 
 	return tokenString, nil
 }
+
